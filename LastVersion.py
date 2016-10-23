@@ -1,50 +1,16 @@
-# -*- coding:Utf-8 -*-
-import pickle
-
-class Personnage:
-	"""Classe définissant un personnage, avec une vitesse, une force, une barre de vie"""
-	
-	def __init__(self, nom, pt_vie, vitesse, force, attaques):
-		"""Attribut le nom, pt de vie, vitesse, force"""
-		self.nom = nom
-		self.pt_vie = pt_vie
-		self.vitesse = vitesse
-		self.force = force
-		self.attaques = attaques
-
-	def caracteristiques(self):
-		"""Donne les caracteristiques du pokemon"""
-		print("Pokemon : {}".format(self.nom))
-		print("Point de vie : {}".format(self.pt_vie))
-		print("Vitesse : {}".format(self.vitesse))
-		print("Force : {}".format(self.force))
-		
-class Attaque:
-		""" Classe définissant les attaques utilisées par les pokémons """
-	
-		def __init__(self, nom, degats):
-			self.nom = nom
-			self.degats = degats
-			
-		def caracteristiques(self):
-			"""Donne les caracteristiques de l'attaque """
-			print("Attaque : {}".format(self.nom))
-			print("Dégâts : {}".format(self.degats))
-			#print("\n")
-
-def PrendreContenuFichier(fichierARecuperer, mode):
-	""" Récupère le contenu d'un fichier pour le remettre avant d'écrire dessus """
-	with open(fichierARecuperer, mode) as fichier:
-		contenu = fichier.read()
-		fichier.close()
-	return contenu
-			
 def CreationAttaque():
 	""" Créé une attaque selon les entrées de l'admin """
 	DEGATS_MAX = 200
-	print('Créez vos attaques !')
-	print('Choisissez un nom : ')
-	nom = input('> ') 
+	print('Créez vos attaques !\n')
+	
+	rep = False
+	while rep == False:	
+		print('Choisissez un nom : ')
+		nom = input('> ') 
+		rep = verifierChose("attaques", nom)
+		if rep == False:
+			print("Cette attaque existe déjà.\n")
+
 	degats = -100
 	while degats <= 0 or degats > DEGATS_MAX:
 		try:
@@ -78,9 +44,15 @@ def CreationPokemon():
 	VITESSE_MAX = 100
 	FORCE_MAX = 100
 	
-	print('Vous avez toujours rêvé de créer vos propres pokémons ? Vous pouvez enfin le faire !')
-	print('Choisissez un nom : ')
-	nom = input('> ') 
+	print('Vous avez toujours rêvé de créer vos propres pokémons ? Vous pouvez enfin le faire !\n')
+
+	rep = False
+	while rep == False:	
+		print('Choisissez un nom : ')
+		nom = input('> ') 
+		rep = verifierChose("Pokemons", nom)
+		if rep == False:
+			print("Ce pokemon existe déjà.\n")
 	
 	pt_vie = -100
 	while pt_vie <= 0 or pt_vie > PV_MAX:
@@ -181,6 +153,18 @@ def ChoisirAttaque():
 
 	return attaques
 
+def verifierChose(type, nomChose):
+	
+	with open(type, 'rb')as fichier:
+		mon_depickler = pickle.Unpickler(fichier)
+		try:
+			while True:
+				Chose = mon_depickler.load()
+				if Chose.nom == nomChose:
+					return False
+		except EOFError:
+			return True
+			
 def voirPokemons():
 	
 	
@@ -198,4 +182,3 @@ def voirPokemons():
 					i += 1
 		except EOFError:
 			pass
-		
