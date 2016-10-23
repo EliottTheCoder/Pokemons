@@ -30,7 +30,7 @@ class Attaque:
 			"""Donne les caracteristiques de l'attaque """
 			print("Attaque : {}".format(self.nom))
 			print("Dégâts : {}".format(self.degats))
-			print("\n")
+			#print("\n")
 
 def PrendreContenuFichier(fichierARecuperer, mode):
 	""" Récupère le contenu d'un fichier pour le remettre avant d'écrire dessus """
@@ -183,12 +183,13 @@ def ChoisirAttaque():
 
 def voirPokemons():
 	
-	print("\n")
+	
 	with open('Pokemons', 'rb') as fichier:
 		mon_depickler = pickle.Unpickler(fichier)
 		try:
 			while True:
 				Pokemon = mon_depickler.load()
+				print("\n")
 				Pokemon.caracteristiques()
 				print("\n")
 				i = 0
