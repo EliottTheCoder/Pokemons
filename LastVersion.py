@@ -1,77 +1,156 @@
 # -*- coding:Utf-8 -*-
 import pickle
 
+DEGATS_MAX = 200
+PV_MAX = 300
+VITESSE_MAX = 100	
+FORCE_MAX = 100
+PORTEE_MAX = 10
+
+def definirVarMax():
+	
+	DEGATS_MAX = creerVar("Quels sont les degats max d'une attaque ? ", 1, 100000)
+	PV_MAX = creerVar("Quels sont les pv max d'un pokemon ? ", 1, 100000)
+	VITESSE_MAX = creerVar("Quelle est la vitesse max d'un pokemon ? ", 1, 100000)
+	FORCE_MAX = creerVar("Quelle est la force max d'un pokemon ? ", 1, 100000)
+	PORTEE_MAX = creerVar("Quelle est la portée max d'une attaque ? ", 1, 100000)
+
 class Personnage:
 	"""Classe définissant un personnage, avec une vitesse, une force, une barre de vie"""
 	
-	def __init__(self, nom, pt_vie, vitesse, force, attaques):
+	def __init__(self, nom, pt_vie, vitesse, force, type, attaques):
 		"""Attribut le nom, pt de vie, vitesse, force"""
 		self.nom = nom
 		self.pt_vie = pt_vie
 		self.vitesse = vitesse
 		self.force = force
+		self.type = type
 		self.attaques = attaques
 
 	def caracteristiques(self):
 		"""Donne les caracteristiques du pokemon"""
-		print("Pokemon : {}".format(self.nom))
-		print("Point de vie : {}".format(self.pt_vie))
-		print("Vitesse : {}".format(self.vitesse))
-		print("Force : {}".format(self.force))
+		print("Pokemon : ", self.nom)
+		print("Point de vie : ", self.pt_vie)
+		print("Vitesse : ", self.vitesse)
+		print("Force : ", self.force)
+		print("Type : ", self.type.nom)
 		
 class Attaque:
 		""" Classe définissant les attaques utilisées par les pokémons """
 	
-		def __init__(self, nom, degats):
+		def __init__(self, nom, type, degats, portee):
 			self.nom = nom
 			self.degats = degats
+			self.type = type
+			self.portee = portee
 			
 		def caracteristiques(self):
 			"""Donne les caracteristiques de l'attaque """
-			print("Attaque : {}".format(self.nom))
-			print("Dégâts : {}".format(self.degats))
-			#print("\n")
+			print("Attaque : ", self.nom)
+			print("Dégâts : ", self.degats)
+			print("Portée : ", self.portee)
+			print("Type : ", self.type.nom)
 
-def CreationAttaque():
-	""" Créé une attaque selon les entrées de l'admin """
-	DEGATS_MAX = 200
-	print('Créez vos attaques !\n')
+class Type:
+	""" Classe définissant le type d'une attaque ou d'un pokemon """
+	
+	def __init__(self, nom, avantage, desavantage):
+		self.avantage = avantage
+		self.desavantage = desavantage
+		self.nom = nom
+			
+	def caracteristiques(self):
+		print("Type : ", self.nom)
+		print("Avantage sur : ", self.avantage)
+		print("Désavantage sur : ", self.desavantage)
+		
+def CreationType():
+	""" Créé un type """
+	
+	print("Créez des nouveaux types !\n")
 	
 	rep = False
 	while rep == False:	
 		print('Choisissez un nom : ')
 		nom = input('> ') 
-		rep = verifierChose("attaques", nom) # Retourne False si l'attaque existe
-		if rep == False:
-			print("Cette attaque existe déjà.\n")
+		rep = verifierChose("Types", nom) # Retourne False si l'attaque existe
+		if rep == False or nom == "":
+			print("Ce type existe déjà.\n")
+			nom = False
+			
+	avantage = nom
+	while avantage == nom:
+		print("Quel est le type face auquel il a un avantage ?")
+		avantage = input("> ")
+		if avantage == nom:
+			print("Un type ne peut pas être aventagé par lui-même.")
+		else:
+			print("Le type ", nom, " est avantagé face au type ", avantage)
+	
+	desavantage = nom
+	while desavantage == nom:
+		print("Quel est le type face auquel il est désaventagé ?")
+		desavantage = input("> ")
+		if desavantage == nom:
+			print("Un type ne peut pas être désaventagé par lui-même.")
+		else:
+			print("Le type ", nom, " est désaventagé face au type ", desavantage)	
+	
+	TypeCree = Type(nom, avantage, desavantage)
+	enregistrerChose("Types", TypeCree)
+	print("Le type a été enregistré !")
 
-	degats = -100
-	while degats <= 0 or degats > DEGATS_MAX:
+def creerVar(phrase, min, max):
+	
+	var = -1
+	while var <= 0 or var > max:
 		try:
-			print('\nChoisissez les dégâts de cette attaque : ')
-			degats = input('> ')
-			degats = int(degats)
-			if degats <= 0:
-				print("Les dégâts de l'attaque doivent être positifs.")
-			if degats > DEGATS_MAX:
-				print("Les dégâts de l'attaque doivent être inférieurs à DEGATS_MAX, donc : ", DEGATS_MAX)
+			if phrase != "":
+				print('\n' + phrase)
+			var = int(input('> '))
+			if var <= 0:
+				print("Le nb doit être positif.")
+			if var > max:
+				print("Le nombre doit être inférieur au max, ici : ", max)
 		except ValueError:
 			print("Vous devez entrez un nombre.")
-			degats = -100
+			var = -1
 	
-	AttaqueCree = Attaque(nom, degats)
-	enregistrerChose("attaques", AttaqueCree)
+	return var
+	
+def CreationAttaque():
+	""" Créé une attaque selon les entrées de l'admin """
+
+	if nbChoses("Types") < 1:
+		print("Il n'y a pas de type, vous devez d'abord créer une attaque.")
+	else:
+		print('Créez vos attaques !\n')
+	
+		rep = False
+		while rep == False:	
+			print('Choisissez un nom : ')
+			nom = input('> ') 
+			rep = verifierChose("attaques", nom) # Retourne False si l'attaque existe
+			if rep == False or nom == "":
+				print("Cette attaque existe déjà.\n")
+				rep = False
+	
+	
+		degats = creerVar("Choisissez les dégâts de cette attaque : ", 1, DEGATS_MAX)
+		portee = creerVar("Choisissez la portée de cette attaque : ", 1, PORTEE_MAX)
+	
+		type = ChoisirType()
+		AttaqueCree = Attaque(nom, type, degats, portee)
+		enregistrerChose("attaques", AttaqueCree)
+		print("L'attaque a été enregistrée !")
 
 def CreationPokemon():	
 	""" Créé un pokemon selon les entrées de l'admin """
 	
-	PV_MAX = 300
-	VITESSE_MAX = 100
-	FORCE_MAX = 100
-	nb_attaques = nbChoses("attaques")
-	
-	if nb_attaques < 4:
+	if nbChoses("attaques") < 4:
 		print("Il n'y a pas assez d'attaques pour créer un pokémon.")
+	elif nbChoses("Types") < 1:
+		print("Il n'y a pas de type, vous ne pouvez pas créer de Pokemon.")
 	else:
 		print('Vous avez toujours rêvé de créer vos propres pokémons ? Vous pouvez enfin le faire !\n')
 
@@ -83,111 +162,77 @@ def CreationPokemon():
 			if rep == False:
 				print("Ce pokemon existe déjà.\n")
 	
-		pt_vie = -100
-		while pt_vie <= 0 or pt_vie > PV_MAX:
-			try:
-				print('\nChoisissez le nombre de points de vie du pokemon : ')
-				pt_vie = input('> ')
-				pt_vie = int(pt_vie)
-				if pt_vie <= 0:
-					print("Le nombre de points de vie doit être supérieur à 0")
-				if pt_vie > PV_MAX:
-					print("Le nombre de points de vie doit être inférieur au PV_MAX, donc : ", PV_MAX)
-			except ValueError:
-				print("Vous devez entrer un nombre.")
-				pt_vie = -100
+		pt_vie = creerVar("Choisissez le nombre de points de vie du pokemon : ", 1, PV_MAX)
+		vitesse = creerVar("Choisissez la vitesse du pokemon : ", 1, VITESSE_MAX)
+		force = creerVar("Choisissez la force du pokemon : ", 1, FORCE_MAX)
+		
+		type = choisirChose("Types", 0)
+		print("\n")
+		attaques = choisirChose("attaques", type) # Renvoie une liste de 4 objets Attaques
 	
-		vitesse = -100
-		while vitesse <= 0 or vitesse > VITESSE_MAX:
-			try:
-				print('\nChoisissez la vitesse du pokemon : ')
-				vitesse = input('> ')
-				vitesse = int(vitesse)
-				if vitesse <= 0:
-					print("Le nombre de points de vitesse doit être positif.")
-				if vitesse > VITESSE_MAX:
-					print("Le nombre de points de vitesse doit être inférieur a VITESSE_MAX, donc : ", VITESSE_MAX)
-			except ValueError:
-				print("Vous devez entrer un nombre")
-				vitesse = -100
-	
-		force = -100
-		while force <= 0 or force > FORCE_MAX:
-			try:
-				print('\nChoisissez la force du pokemon : ')
-				force = input('> ')
-				force = int(force)
-				if force <= 0:
-					print("Le nombre de points de force doit être positif.")
-				if force > FORCE_MAX:
-					print("Le nombre de points de force doit être inférieur a FORCE_MAX, donc : ", FORCE_MAX)
-			except ValueError:
-				print("Vous devez entrer un nombre")	
-				force = -100
-	
-		attaques = ChoisirAttaque() # Renvoie une liste de 4 objets Attaques
-	
-		PokemonCree = Personnage(nom, pt_vie, vitesse, force, attaques)
+		PokemonCree = Personnage(nom, pt_vie, vitesse, force, type, attaques)
 		enregistrerChose("Pokemons", PokemonCree)
 
 def enregistrerChose(type, objet):
 	""" Enregistre un perso ou une attaque """
-	contenu = PrendreContenuFichier(type, "rb")
 	
-	with open(type, "wb") as fichier:
+	with open(type, "ab") as fichier:
 		mon_pickler = pickle.Pickler(fichier)
-		fichier.write(contenu)
 		mon_pickler.dump(objet)
+
+def choisirChose(type, typeAttaque):
+	
+	if type == "Types":
+		Objet = (Type)
+		phrase = "Quel type choisissez-vous ?"
+		phrase2 = "Vous avez choisi ce type : "
+	else:
+		Objet = (Attaque)
+		phrase = "Quelle attaque choisissez-vous ?"
+		phrase2 = "Vous avez choisi cette attaque : "
 		
-def ChoisirAttaque():
-	""" Attribut des attaques à un perso """
-	AttaquePrise = Attaque("Attaque", "10")
-	dicoAttaques = {}
-
-	fichier = open('attaques', 'rb')
-	mon_depickler = pickle.Unpickler(fichier)
-	i = 0
-
-	try:
-		while True:
-			AttaquePrise = mon_depickler.load()
-			dicoAttaques[i] = AttaquePrise
-			#AttaquePrise.caracteristiques()
-			i+=1
-	except EOFError:
-		pass
-
-	fichier.close()		
+	dicoObjets = {}
 	
-	i = 0
-	print('Voici les attaques dispos : ')
-	while i < len(dicoAttaques):
-		print('Attaque', i,' : ', dicoAttaques[i].nom, ' = ', dicoAttaques[i].degats)
-		i += 1
-
-	print("Vous pouvez choisir 4 attaques parmis les dernières... Lesquelles choisissez-vous ? Entrez les numéros correspondants")
-	
-	i = 0
-	attaquesChoisies = {}
-	
-	while i < 4:
-		print("Attaque", i + 1 , " : ")
-		attaquesChoisies[i] = input("> ")
+	with open(type, 'rb') as fichier:
+		mon_depickler = pickle.Unpickler(fichier)
+		i = 0
 		try:
-			attaquesChoisies[i] = int(attaquesChoisies[i])
-			if attaquesChoisies[i] < len(dicoAttaques) and attaquesChoisies[i] >= 0:
-				i += 1
-			else:
-				print("Ce numéro ne correspond à aucune attaque.")
-		except ValueError:
-			print("Vous devez entrer un nombre.")
+			while True:
+				Objet = mon_depickler.load()
+				dicoObjets[i] = Objet
+				i+=1
+		except EOFError:
+			pass
+		
+	i = 0
+	print('Voici les ' + type + ' dispos : ')
+	while i < len(dicoObjets):
+		if type == "attaques":
+			print(type, ' ', i + 1,' : ', dicoObjets[i].nom, ' = ', dicoObjets[i].degats)
+		else:
+			print(type, ' ', i + 1,' : ', dicoObjets[i].nom)
+		i += 1
 	
-	print('Vous avez choisi les attaques : ')
-	print(dicoAttaques[attaquesChoisies[0]].nom, ", ", dicoAttaques[attaquesChoisies[1]].nom, ", ", dicoAttaques[attaquesChoisies[2]].nom, " et ", dicoAttaques[attaquesChoisies[3]].nom)
-
-	attaques = [dicoAttaques[attaquesChoisies[0]], dicoAttaques[attaquesChoisies[1]], dicoAttaques[attaquesChoisies[2]], dicoAttaques[attaquesChoisies[3]]]
-
-	return attaques
+	if type == "Types":
+		numObjet = creerVar(phrase, 1, len(dicoObjets)) - 1
+		ObjetChoisi = dicoObjets[numObjet]
+		print(phrase2, Objet.nom)
+		return ObjetChoisi	
+	else:
+		print("Vous pouvez choisir 4 attaques parmis les dernières... Lesquelles choisissez-vous ? Entrez les numéros correspondants")
+		i = 0
+		attaquesChoisies = {}
+	
+		while i < 4:
+			print("Attaque", i + 1 , " : ")
+			attaquesChoisies[i] = creerVar("", 1, len(dicoObjets)) - 1
+			i += 1
+			
+		print('Vous avez choisi les attaques : ')
+		attaques = [dicoObjets[attaquesChoisies[0]], dicoObjets[attaquesChoisies[1]], dicoObjets[attaquesChoisies[2]], dicoObjets[attaquesChoisies[3]]]
+		print(attaques[0].nom + " + " + attaques[1].nom + " + " + attaques[2].nom + " + " + attaques[3].nom)
+		
+		return attaques
 
 def verifierChose(type, nomChose):
 	""" Verifie l'existence d'un objet """
@@ -200,18 +245,6 @@ def verifierChose(type, nomChose):
 					return False
 		except EOFError:
 			return True
-				
-def CreerFichiers():
-	""" Initialisation, créé les fichiers attaques et Pokemons s'il n'existent pas """
-	contenu = PrendreContenuFichier('fichier.txt', 'r')
-	if contenu == "0":
-		fichiersAttaques = open('attaques', 'wb')
-		fichiersPokemons = open('Pokemons', 'wb')
-		fichiersAttaques.close()
-		fichiersPokemons.close()
-		fichier = open('fichier.txt', 'w')
-		fichier.write("1")
-		fichier.close()
 
 def voirChose(type):
 	""" Affiche une liste des objets """
@@ -233,19 +266,36 @@ def voirChose(type):
 		except EOFError:
 			if nb == 0:
 				print("Il n'y a pas encore de ", type)
-				
+
+def toutSupprimer():
+	""" Supprime tout """
+	
+	print("VOULEZ-VOUS VRAIMENT TOUT SUPPRIMER ? OUI = 1")
+	rep = input("> ")
+	if rep == "1":
+		fichier = open('Types', 'w')
+		fichier = open('attaques', 'w')
+		fichier = open('Pokemons', 'w')
+		fichier.close()
+			
 def supprimerChose(type):
 	""" Supprime un objet """
+	
 	if nbChoses(type) == 0:
 		print("Il n'y a pas de ", type)
-	
 	else:
 		if type == "Pokemons":
 			question = "Quel pokémon voulez-vous supprimer ?"
 			reponse = "Ce pokémon n'existe pas."
+			reponse2 = "Le pokémon a bien été supprimé."
+		elif type == "Types":
+			question = "Quel type voulez-vous supprimer ?"
+			reponse = "Ce type n'existe pas."
+			reponse2 = "Le type a bien été supprimé"
 		else:
 			question = "Quelle attaques voulez-vous supprimer ?"
 			reponse = "Cette attaque n'existe pas."
+			reponse2 = "L'attaque a bien été supprimée."
 	
 		rep = True
 		while rep == True:
@@ -254,6 +304,8 @@ def supprimerChose(type):
 			if nom == "1":
 				if type == "Pokemons":
 					voirChose("Pokemons")
+				elif type == "Types":
+					voirChose("Types")
 				else:
 					voirChose("attaques")
 			else:
@@ -281,8 +333,9 @@ def supprimerChose(type):
 			while i < len(Choses):
 				mon_pickler.dump(Choses[i])
 				i += 1
-		print("Le/la ", type, " a bien été supprimé(e)")
-		
+				
+		print(reponse2)
+			
 def nbChoses(type):
 	""" Renvoie le nb d'objets """
 	with open(type, "rb") as fichier:
@@ -294,10 +347,3 @@ def nbChoses(type):
 				i += 1
 		except EOFError:
 			return i
-				
-def PrendreContenuFichier(fichierARecuperer, mode):
-	""" Récupère le contenu d'un fichier pour le remettre avant d'écrire dessus """
-	with open(fichierARecuperer, mode) as fichier:
-		contenu = fichier.read()
-		fichier.close()
-	return contenu
