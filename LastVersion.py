@@ -14,6 +14,9 @@ def definirVarMax():
 	VITESSE_MAX = creerVar("Quelle est la vitesse max d'un pokemon ? ", 1, 100000)
 	FORCE_MAX = creerVar("Quelle est la force max d'un pokemon ? ", 1, 100000)
 	PORTEE_MAX = creerVar("Quelle est la portée max d'une attaque ? ", 1, 100000)
+	
+	with open('parametres.txt', 'w') as fichier:
+		fichier.write(str(DEGATS_MAX) + '\n' + str(PV_MAX) + '\n' + str(VITESSE_MAX) + '\n' + str(FORCE_MAX) + '\n' + str(PORTEE_MAX))
 
 class Personnage:
 	"""Classe définissant un personnage, avec une vitesse, une force, une barre de vie"""
@@ -111,7 +114,7 @@ def creerVar(phrase, min, max):
 			if var <= 0:
 				print("Le nb doit être positif.")
 			if var > max:
-				print("Le nombre doit être inférieur au max, ici : ", max)
+				print("Le nombre doit être inférieur ou égal au max, ici : ", max)
 		except ValueError:
 			print("Vous devez entrez un nombre.")
 			var = -1
@@ -139,7 +142,7 @@ def CreationAttaque():
 		degats = creerVar("Choisissez les dégâts de cette attaque : ", 1, DEGATS_MAX)
 		portee = creerVar("Choisissez la portée de cette attaque : ", 1, PORTEE_MAX)
 	
-		type = ChoisirType()
+		type = choisirChose("Types", 0)
 		AttaqueCree = Attaque(nom, type, degats, portee)
 		enregistrerChose("attaques", AttaqueCree)
 		print("L'attaque a été enregistrée !")
@@ -186,53 +189,62 @@ def choisirChose(type, typeAttaque):
 		Objet = (Type)
 		phrase = "Quel type choisissez-vous ?"
 		phrase2 = "Vous avez choisi ce type : "
+	elif type == "Pokemons":
+		Objet = (Personnage)
+		phrase = "Quel Pokemon choisissez-vous ?"
+		phrase2 = "Vous avez choisi ce Pokemon : "
 	else:
 		Objet = (Attaque)
 		phrase = "Quelle attaque choisissez-vous ?"
 		phrase2 = "Vous avez choisi cette attaque : "
 		
-	dicoObjets = {}
+	listeObjets = []
 	
 	with open(type, 'rb') as fichier:
 		mon_depickler = pickle.Unpickler(fichier)
-		i = 0
 		try:
 			while True:
 				Objet = mon_depickler.load()
-				dicoObjets[i] = Objet
-				i+=1
+				listeObjets.append(Objet)
 		except EOFError:
 			pass
-		
+	
+	if type == "attaques":
+		listeObjets = [attaques for attaques in listeObjets if attaques.type.nom == typeAttaque.nom]
+		if len(listeObjets) < 4:
+			print("Il n'y a pas assez d'attaques de types " + typeAttaque.nom)
+			return 0
+	
 	i = 0
 	print('Voici les ' + type + ' dispos : ')
-	while i < len(dicoObjets):
+	while i < len(listeObjets):
 		if type == "attaques":
-			print(type, ' ', i + 1,' : ', dicoObjets[i].nom, ' = ', dicoObjets[i].degats)
+			print(type, ' ', i + 1,' : ', listeObjets[i].nom, ' = ', listeObjets[i].degats)
 		else:
-			print(type, ' ', i + 1,' : ', dicoObjets[i].nom)
+			print(type, ' ', i + 1,' : ', listeObjets[i].nom)
 		i += 1
 	
-	if type == "Types":
-		numObjet = creerVar(phrase, 1, len(dicoObjets)) - 1
-		ObjetChoisi = dicoObjets[numObjet]
-		print(phrase2, Objet.nom)
-		return ObjetChoisi	
-	else:
-		print("Vous pouvez choisir 4 attaques parmis les dernières... Lesquelles choisissez-vous ? Entrez les numéros correspondants")
+	if type == "attaques":
+		print("\nVous pouvez choisir 4 attaques parmis les dernières... Lesquelles choisissez-vous ? Entrez les numéros correspondants")
 		i = 0
-		attaquesChoisies = {}
+		attaquesChoisies = []
 	
 		while i < 4:
 			print("Attaque", i + 1 , " : ")
-			attaquesChoisies[i] = creerVar("", 1, len(dicoObjets)) - 1
+			attaquesChoisies.append(creerVar("", 1, len(listeObjets)) - 1)
 			i += 1
 			
 		print('Vous avez choisi les attaques : ')
-		attaques = [dicoObjets[attaquesChoisies[0]], dicoObjets[attaquesChoisies[1]], dicoObjets[attaquesChoisies[2]], dicoObjets[attaquesChoisies[3]]]
+		attaques = [listeObjets[attaquesChoisies[0]], listeObjets[attaquesChoisies[1]], listeObjets[attaquesChoisies[2]], listeObjets[attaquesChoisies[3]]]
 		print(attaques[0].nom + " + " + attaques[1].nom + " + " + attaques[2].nom + " + " + attaques[3].nom)
 		
 		return attaques
+	
+	else:
+		numObjet = creerVar(phrase, 1, len(listeObjets)) - 1
+		ObjetChoisi = listeObjets[numObjet]
+		print(phrase2, Objet.nom)
+		return ObjetChoisi	
 
 def verifierChose(type, nomChose):
 	""" Verifie l'existence d'un objet """
